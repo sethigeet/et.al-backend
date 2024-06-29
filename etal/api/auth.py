@@ -6,8 +6,7 @@ import argon2
 from fastapi import APIRouter, Cookie, HTTPException, Depends
 from fastapi.responses import JSONResponse, Response
 
-from backend import config
-from backend.db import user as db_user, session as db_session
+from etal import config, db
 from . import helpers, input_models
 
 router = APIRouter()
@@ -16,27 +15,27 @@ hasher = argon2.PasswordHasher()
 
 @router.get("/register")
 async def register(input: input_models.RegisterInput):
-    user = db_user.find_by_username(input.username)
+    user = db.user.find_by_username(input.username)
     if user is not None:
         return JSONResponse(
             {"detail": "A user with that username already exists!"},
             status_code=400,
         )
 
-    user = db_user.User(
+    user = db.user.User(
         username=input.username,
         password=hasher.hash(input.password),
         name=input.name,
         email=input.email,
     )
-    db_user.upsert(user)
+    db.user.upsert(user)
 
     return JSONResponse({"success": True}, status_code=201)
 
 
-@router.get("/login", response_model=db_user.UserDTO)
-async def login(input: input_models.LoginInput, response: Response) -> db_user.User:
-    user = db_user.find_by_username(input.username)
+@router.get("/login", response_model=db.user.UserDTO)
+async def login(input: input_models.LoginInput, response: Response) -> db.user.User:
+    user = db.user.find_by_username(input.username)
     if user is None:
         raise HTTPException(
             status_code=401,
@@ -47,18 +46,18 @@ async def login(input: input_models.LoginInput, response: Response) -> db_user.U
         hasher.verify(user.password, input.password)
         if hasher.check_needs_rehash(user.password):
             user.password = hasher.hash(input.password)
-            db_user.upsert(user)
+            db.user.upsert(user)
     except:
         raise HTTPException(
             status_code=401,
             detail="Either a user with that username does not exist or your password is incorrect!",
         )
 
-    session = db_session.Session(
+    session = db.session.Session(
         user_id=user.id,  # type: ignore
         expires_at=datetime.datetime.now() + datetime.timedelta(days=7),
     )
-    db_session.upsert(session)
+    db.session.upsert(session)
 
     response.set_cookie(
         config.COOKIE_NAME,
@@ -78,11 +77,11 @@ async def logout(
     if session_id is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    db_session.delete(uuid.UUID(session_id))
+    db.session.delete(uuid.UUID(session_id))
     res.delete_cookie(config.COOKIE_NAME)
     return {"success": True}
 
 
-@router.get("/me", response_model=db_user.UserDTO)
-async def me(user: Annotated[db_user.User, Depends(helpers.get_user)]) -> db_user.User:
+@router.get("/me", response_model=db.user.UserDTO)
+async def me(user: Annotated[db.user.User, Depends(helpers.get_user)]) -> db.user.User:
     return user

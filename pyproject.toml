@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "research-assistant-backend"
+name = "et.al-backend"
 version = "0.1.0"
 description = "Backed for the Research Assistant App"
 authors = ["Geet Sethi <geetsethi05@gmail.com>"]

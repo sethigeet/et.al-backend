@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from sqlmodel import SQLModel, Field, Session, select
 
-from . import get_engine
+from .helpers import get_engine
 
 
 class User(SQLModel, table=True):

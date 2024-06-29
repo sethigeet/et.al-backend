@@ -5,7 +5,7 @@ import uuid
 from sqlmodel import SQLModel, Field, Session as SqlSession, select
 from sqlalchemy import Uuid
 
-from . import get_engine
+from .helpers import get_engine
 
 
 class Session(SQLModel, table=True):

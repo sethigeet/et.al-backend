@@ -2,7 +2,7 @@ import datetime
 from typing import Annotated
 from fastapi import Cookie, HTTPException
 
-from backend import config, db
+from etal import config, db
 
 
 async def get_user(

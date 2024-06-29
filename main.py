@@ -7,8 +7,8 @@ load_dotenv(f".env.{env}")
 import uvicorn
 
 # NOTE: Do not remove this import. It is used by uvicorn to load the app
-from backend.api import app
-from backend.db import run_migrations
+from etal.api import app
+from etal.db.helpers import run_migrations
 
 if __name__ == "__main__":
     run_migrations()
